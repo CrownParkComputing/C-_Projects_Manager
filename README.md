@@ -14,6 +14,9 @@ A powerful, Qt5-based workspace management tool for C++ developers. Streamline y
 - **Project Organization**: Manage multiple C++ projects from a single interface
 - **Workspace Persistence**: Automatically saves workspace configuration on exit
 - **Build System Intelligence**: Understands your project structure and build requirements
+- **Automatic Naming**: Workspace names are automatically generated from folder or repository names
+- **Workspace Removal**: Remove workspaces from list with confirmation (files preserved)
+- **GitHub Integration**: Clone repositories directly into workspaces with one click
 
 ### 🔨 **Advanced Build Management**
 - **Multi-System Support**: Switch between Make and Ninja build systems with one click
@@ -27,17 +30,30 @@ A powerful, Qt5-based workspace management tool for C++ developers. Streamline y
 - **GUI Detection**: Identifies and handles GUI applications appropriately
 - **Build Directory Focus**: Prioritizes executables from build output directories
 
-### 🌿 **Git Integration**
+### 🌿 **Git & GitHub Integration**
 - **Version Control**: Integrated git operations and version management
 - **Semantic Versioning**: Automated major.minor.patch version handling
 - **Tag Management**: Create and push version tags with one click
 - **Branch Operations**: Switch between branches and manage releases
+- **GitHub Authentication**: Secure authentication with Personal Access Tokens
+- **Repository Browsing**: View and explore your GitHub repositories with detailed information
+- **Repository Creation**: Create new repositories directly from the application
+- **Repository Management**: Clone repositories and manage GitHub integration
+- **Repository Browsing**: Browse and clone your GitHub repositories
+- **Repository Creation**: Create new GitHub repositories directly from the app
 
 ### ⚙️ **Developer Experience**
 - **Makefile Editing**: Direct integration with code editors for build file modifications
 - **Error Handling**: Clear error messages and build failure diagnostics
 - **Keyboard Shortcuts**: Efficient workflow with intuitive controls
 - **Cross-Platform**: Designed for Linux with Windows and macOS compatibility
+
+### 🔧 **Script Management**
+- **Script Discovery**: Automatically detects and lists available scripts in the `scripts/` directory
+- **One-Click Execution**: Run setup, cleanup, packaging, and other development scripts with progress monitoring
+- **System-Wide Installation**: Install C++ Projects Manager system-wide with desktop integration
+- **Real-Time Output**: See script execution progress and output in real-time
+- **Error Handling**: Clear feedback on script success or failure with detailed output
 
 ## 🚀 Quick Start
 
@@ -73,6 +89,18 @@ make -j$(nproc)
 ./cppm
 ```
 
+#### Option 3: System-Wide Installation
+After building the project:
+1. Run the application: `./run.sh`
+2. In the application, click **"Install System-Wide"**
+3. Enter your password when prompted
+4. Access from anywhere: `cppm` or find "C++ Workspace Manager" in your application menu
+
+Or manually install:
+```bash
+./scripts/install-system-wide.sh
+```
+
 ### Ubuntu/Debian Dependencies
 ```bash
 sudo apt update
@@ -92,10 +120,21 @@ sudo pacman -S qt5-base cmake gcc git ninja
 ## 📖 Usage
 
 ### Adding Workspaces
-1. Click **"Add Workspace"**
-2. Select your C++ project directory
+1. **Add Local Folder**: Click **"Add Local Folder"** and select your C++ project directory
+2. **Clone from GitHub**: Click **"Clone from GitHub"** and enter a repository URL
+   - Supports both HTTPS and SSH URLs
+   - Automatically creates workspace with repository name
+   - Select destination directory for cloning
 3. The tool automatically detects the build system
 4. Configure build preferences (Make/Ninja)
+
+### Managing Workspaces
+1. **Remove Workspace**: Select a workspace and click **"Remove Workspace"**
+   - Only removes from the workspace list (files are preserved)
+   - Confirmation dialog prevents accidental removal
+2. **Refresh**: Update workspace information and build status
+
+**Note**: Workspace names are automatically generated from folder or repository names.
 
 ### Building Projects
 1. Select workspace from the list
@@ -117,6 +156,41 @@ sudo pacman -S qt5-base cmake gcc git ninja
    - **Patch**: Bug fixes (1.0.0 → 1.0.1)
 2. **"Push"** sends changes to remote repository
 3. **"Commit & Push"** combines commit and push operations
+4. **GitHub Integration**:
+   - **"Rename Repo"**: Rename the local repository directory
+   - **"Create Release"**: Create GitHub releases with tags and notes
+   - **"Open on GitHub"**: Open the repository in your browser
+   - **"View Issues"**: Open the GitHub issues page in your browser
+   - **"GitHub Auth"**: Authenticate with GitHub using personal access token
+   - **"Browse My Repos"**: Browse and clone your GitHub repositories
+   - **"Create Repo"**: Create new repositories on GitHub
+
+### GitHub Authentication
+1. Click **"GitHub Auth"** to authenticate with GitHub
+2. Enter your Personal Access Token (create one at: https://github.com/settings/tokens)
+3. Required token scopes: `repo`, `user`
+4. Once authenticated, you can:
+   - Browse all your repositories
+   - Clone repositories directly into workspaces
+   - Create new repositories on GitHub
+
+### Script Management
+1. **View Available Scripts**: All `.sh` files in the `scripts/` directory are automatically detected
+2. **Run Scripts**: Select a script from the dropdown and click **"Run Script"**
+   - Real-time output display in the build output area
+   - Progress indication during execution
+   - Clear success/failure notifications
+3. **System-Wide Installation**: Click **"Install System-Wide"** to:
+   - Install the executable to `/usr/local/bin/cppm`
+   - Create a desktop entry for easy access
+   - Make the application available from anywhere in the terminal
+4. **Available Scripts**:
+   - `setup.sh` - Development environment setup
+   - `clean-all.sh` - Clean all build artifacts
+   - `install-deps.sh` - Install development dependencies
+   - `package.sh` - Create distribution packages
+   - `install-system-wide.sh` - System-wide installation
+   - `uninstall-system-wide.sh` - Remove system-wide installation
 
 ## 🛠️ Development
 
@@ -140,6 +214,10 @@ C++_Projects_Manager/
 - `./scripts/debug.sh` - Interactive debugging with GDB/Valgrind
 - `./scripts/install-deps.sh` - Install additional development tools
 - `./scripts/package.sh` - Create distribution packages
+- `./scripts/install-system-wide.sh` - Install application system-wide
+- `./scripts/uninstall-system-wide.sh` - Remove system-wide installation
+
+All scripts can be executed directly or through the application's Script Management interface.
 
 ### Building from Source
 ```bash

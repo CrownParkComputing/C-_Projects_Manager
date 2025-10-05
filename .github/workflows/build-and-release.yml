@@ -1,0 +1,198 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create a new release'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            name: Linux
+            artifact_name: cppm-linux
+            executable_extension: ""
+            package_command: "tar -czf"
+            package_extension: ".tar.gz"
+          - os: macos-latest
+            name: macOS
+            artifact_name: cppm-macos
+            executable_extension: ""
+            package_command: "tar -czf"
+            package_extension: ".tar.gz"
+          - os: windows-latest
+            name: Windows
+            artifact_name: cppm-windows
+            executable_extension: ".exe"
+            package_command: "7z a"
+            package_extension: ".zip"
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install Qt (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y qt5-qmake qtbase5-dev qtbase5-dev-tools build-essential cmake ninja-build curl git
+        
+    - name: Install Qt (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew update
+        brew install qt@5 cmake ninja curl git
+        echo "/usr/local/opt/qt@5/bin" >> $GITHUB_PATH
+        
+    - name: Install Qt (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '5.15.2'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2019_64'
+        tools: 'tools_cmake'
+        
+    - name: Install build tools (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install cmake ninja curl git
+        
+    - name: Configure CMake
+      run: |
+        mkdir build
+        cd build
+        cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+        
+    - name: Build
+      run: |
+        cd build
+        ninja
+        
+    - name: Test executable
+      run: |
+        cd build
+        ls -la
+        file cppm${{ matrix.executable_extension }} || echo "File command not available"
+        
+    - name: Create package directory
+      run: |
+        mkdir -p package/cppm-${{ matrix.name }}
+        cp build/cppm${{ matrix.executable_extension }} package/cppm-${{ matrix.name }}/
+        cp README.md package/cppm-${{ matrix.name }}/
+        cp LICENSE package/cppm-${{ matrix.name }}/
+        cp -r scripts package/cppm-${{ matrix.name }}/
+        
+    - name: Create package (Linux/macOS)
+      if: matrix.os != 'windows-latest'
+      run: |
+        cd package
+        ${{ matrix.package_command }} ${{ matrix.artifact_name }}${{ matrix.package_extension }} cppm-${{ matrix.name }}
+        
+    - name: Create package (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd package
+        7z a ${{ matrix.artifact_name }}${{ matrix.package_extension }} cppm-${{ matrix.name }}
+        
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.artifact_name }}
+        path: package/${{ matrix.artifact_name }}${{ matrix.package_extension }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.create_release == 'true'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      
+    - name: Display structure of downloaded files
+      run: ls -R
+      
+    - name: Get tag name
+      id: get_tag
+      run: |
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        else
+          echo "tag=v$(date +'%Y.%m.%d')-$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Create Release Notes
+      id: release_notes
+      run: |
+        cat > release_notes.md << 'EOF'
+        ## C++ Projects Manager ${{ steps.get_tag.outputs.tag }}
+        
+        ### Features
+        - **Multi-Project Management**: Manage multiple C++ projects from a single interface
+        - **Auto-Detection**: Automatically detects CMake, Make, Ninja, and custom build systems
+        - **GitHub Integration**: Browse repositories, authenticate, create repos with Personal Access Token
+        - **Workspace Management**: Add, remove, and organize your C++ projects with automatic naming
+        - **Real-time Feedback**: Live build output with color-coded status indicators
+        - **Cross-Platform**: Works on Linux, macOS, and Windows
+        
+        ### New in this Release
+        - ✨ Modern dark theme with colorful UI
+        - 🔗 Direct GitHub Personal Access Token generation link
+        - 🗑️ Workspace removal functionality with confirmation
+        - 🎨 Styled buttons with success/danger color themes
+        - 🚀 Multi-OS builds and automated releases
+        
+        ### Downloads
+        - **Linux**: cppm-linux.tar.gz
+        - **macOS**: cppm-macos.tar.gz  
+        - **Windows**: cppm-windows.zip
+        
+        ### Installation
+        1. Download the appropriate package for your OS
+        2. Extract the archive
+        3. Run the executable (`cppm` on Linux/macOS, `cppm.exe` on Windows)
+        4. For system-wide installation on Linux, use the provided scripts
+        
+        ### Requirements
+        - Qt5 (5.12 or later)
+        - CMake (3.16 or later)
+        - Git
+        - curl (for GitHub integration)
+        
+        Built with ❤️ for C++ developers
+        EOF
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.get_tag.outputs.tag }}
+        name: C++ Projects Manager ${{ steps.get_tag.outputs.tag }}
+        body_path: release_notes.md
+        files: |
+          cppm-linux/cppm-linux.tar.gz
+          cppm-macos/cppm-macos.tar.gz
+          cppm-windows/cppm-windows.zip
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -27,6 +27,9 @@ protected:
 
 public slots:
     void addWorkspace();
+    void addLocalWorkspace();
+    void cloneGithubRepo();
+    void removeWorkspace();
     void selectWorkspace(QListWidgetItem* item);
     void refreshWorkspace();
 
@@ -43,11 +46,31 @@ public slots:
     void gitPatchVersion();
     void gitPush();
     void gitCommitAndPush();
+    void renameRepository();
+    void createGithubRelease();
+    void openGithubRepo();
+    void viewGithubIssues();
+    void authenticateGithub();
+    void openGithubTokenPage();
+    void browseGithubRepos();
+    void createGithubRepo();
+
+    // Script management actions
+    void runScript();
+    void installSystemWide();
 
     // Build process slots
     void onBuildFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onCmakeFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onBuildOutput();
+    void onScriptFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void onInstallFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void onScriptOutput();
+    void onCloneFinished(int exitCode, QProcess::ExitStatus exitStatus, const QString& repoName, const QString& clonePath);
+    void onGithubActionFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void onGithubAuthFinished(int exitCode, QProcess::ExitStatus exitStatus, const QString& token);
+    void onBrowseReposFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void onCreateRepoFinished(int exitCode, QProcess::ExitStatus exitStatus, const QString& repoName);
 
 private:
     void setupUI();
@@ -57,15 +80,31 @@ private:
     QString incrementVersion(const QString& version, int type); // 0=patch, 1=minor, 2=major
     void createVersionTag(const QString& version);
     void startMakeBuild();
+    void populateScriptList();
+    void discoverScripts();
+    void createSystemWideInstallScript(const QString& scriptPath);
+    void startCloneProcess(const QString& repoUrl, const QString& repoName, const QString& clonePath);
+    
+    struct RepoInfo {
+        QString fullName;
+        QString description;
+        QString language;
+        bool isPrivate;
+        QString updatedAt;
+    };
+    void showRepositoryDialog(const QList<RepoInfo>& repositories);
 
     WorkspaceManager wm_;
     QListWidget* workspaceList_;
     QTextEdit* infoDisplay_;
-    QPushButton* addButton_;
+    QPushButton* addLocalButton_;
+    QPushButton* cloneGithubButton_;
+    QPushButton* removeButton_;
     QPushButton* refreshButton_;
     
     // Current workspace tracking
     Workspace* currentWorkspace_;
+    QString currentWorkspaceName_;
     
     // Build management buttons
     QGroupBox* buildGroup_;
@@ -83,8 +122,29 @@ private:
     QPushButton* patchButton_;
     QPushButton* pushButton_;
     QPushButton* commitPushButton_;
+    QPushButton* renameRepoButton_;
+    QPushButton* createReleaseButton_;
+    QPushButton* openGithubButton_;
+    QPushButton* viewIssuesButton_;
+    QPushButton* githubAuthButton_;
+    QPushButton* generateTokenButton_;
+    QPushButton* browseReposButton_;
+    QPushButton* createRepoButton_;
     QComboBox* branchCombo_;
     QLabel* versionLabel_;
+
+    // Script management
+    QGroupBox* scriptGroup_;
+    QComboBox* scriptCombo_;
+    QPushButton* runScriptButton_;
+    QPushButton* installSystemWideButton_;
+    QStringList availableScripts_;
+
+    // GitHub authentication
+    QString githubToken_;
+    QString githubUsername_;
+    bool isGithubAuthenticated_;
+    QStringList userRepositories_;
 
     // Build progress
     QProcess* buildProcess_;
