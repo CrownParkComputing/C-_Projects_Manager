@@ -1,0 +1,100 @@
+# Build directories
+build/
+dist/
+packages/
+
+# Compiled Object files
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Qt specific
+*.pro.user*
+*_autogen/
+*.qm
+*.qrc.cpp
+moc_*.cpp
+moc_*.h
+ui_*.h
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Testing/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+# IDE specific
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/c_cpp_properties.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.bak
+*.backup
+*~
+
+# User data
+workspaces.txt
+
+# Package files
+*.tar.gz
+*.zip
+*.deb
+*.rpm
+
+# Core dumps
+core
+core.*
+
+# Valgrind output
+*.valgrind
+vgcore.*
+
+# GDB history
+.gdb_history
